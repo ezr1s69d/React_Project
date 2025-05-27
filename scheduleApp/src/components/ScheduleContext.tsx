@@ -1,4 +1,5 @@
-import { createContext, useReducer, useContext, ReactNode } from "react";
+import { createContext, useReducer, useContext } from "react";
+import type { ReactNode } from "react";
 
 export interface State {
   id: string;

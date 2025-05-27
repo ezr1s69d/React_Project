@@ -3,7 +3,8 @@ import type { Action } from "./ScheduleApp";
 
 function TableBody(
     { table, dispatch }:
-    { table: string[][];
+    { 
+      table: string[][];
         dispatch: React.Dispatch<Action>;
     }) {
   return (

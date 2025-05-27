@@ -2,7 +2,8 @@ import { useState } from "react";
 import type { Action } from "./ScheduleApp";
 
 function TableTitle({ title, dispatch }:
-    { title: string;
+    { 
+        title: string;
         dispatch: React.Dispatch<Action>;
     }
 ) {
