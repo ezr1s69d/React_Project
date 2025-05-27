@@ -1,11 +1,7 @@
-import type { Action } from "./ScheduleApp";
+import { useScheduleDispatch } from "./ScheduleContext";
 
-function RowButton({ dispatch, rowIndex }:
-    {
-        dispatch: React.Dispatch<Action>;
-        rowIndex: number;
-    }
-) {
+function RowButton({ rowIndex }:{ rowIndex: number; }) {
+  const dispatch = useScheduleDispatch();
   return (
     <>
       <td>

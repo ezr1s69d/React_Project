@@ -1,12 +1,20 @@
 import { createContext, useReducer, useContext } from "react";
 import type { ReactNode } from "react";
 
-export interface State {
+export interface Table {
   id: string;
   title: string;
   fields: string[];
   tableData: string[][];
-  childTable: State[];
+  childTable: Table[];
+}
+
+export interface State {
+  Tables: Table[];
+  currentTableId: string;
+  currentTableTitle: string;
+  currentTableFields: string[];
+  currentTableData: string[][];
 }
 
 export type Action =
@@ -15,27 +23,39 @@ export type Action =
   | { type: "DeleteRow"; index: number }
   | { type: "UpdateCell"; row: number; col: number; value: string }
   | { type: "UpdateField"; col: number; value: string }
-  | { type: "UpdateTitle"; value: string };
+  | { type: "UpdateTitle"; value: string }
+  | { type: "SetCurrentTable", tableId: string, tableTitle: string, tableFields: string[], tableData: string[][] };
 
 const initialState: State = {
-  id: "root",
-  title: "Root Table",
-  fields: ["time", "name", "place"],
-  tableData: [
-    ["18:00-19:00", "Ale", "Dining Room"],
-    ["19:00-20:00", "Bob", "Bedroom"]
-  ],
-  childTable: [
+  Tables: [
     {
-      id: "child1",
-      title: "Child Table",
+      id: "root",
+      title: "Root Table",
       fields: ["time", "name", "place"],
       tableData: [
-        ["18:00-19:00", "Chris", "Dining Room"],
-        ["19:00-20:00", "Dylan", "Bedroom"]
+        ["18:00-19:00", "Ale", "Dining Room"],
+        ["19:00-20:00", "Bob", "Bedroom"]
       ],
-      childTable: []
+      childTable: [
+        {
+          id: "child1",
+          title: "Child Table",
+          fields: ["time", "name", "place"],
+          tableData: [
+            ["18:00-19:00", "Chris", "Dining Room"],
+            ["19:00-20:00", "Dylan", "Bedroom"]
+          ],
+          childTable: []
+        }
+      ]
     }
+  ],
+  currentTableId: "root",
+  currentTableTitle: "Root Table",
+  currentTableFields: ["time", "name", "place"],
+  currentTableData: [
+    ["18:00-19:00", "Ale", "Dining Room"],
+    ["19:00-20:00", "Bob", "Bedroom"]
   ]
 };
 
@@ -44,31 +64,31 @@ function reducer(state: State, action: Action): State {
     case "AddColumn":
       return {
         ...state,
-        fields: [...state.fields, "new field"],
-        tableData: state.tableData.map(row => [...row, ""])
+        currentTableFields: [...state.currentTableFields, "new field"],
+        currentTableData: state.currentTableData.map(row => [...row, ""])
       };
     case "AddRow":
       return {
         ...state,
-        tableData: [
-          ...state.tableData.slice(0, action.index + 1),
-          new Array(state.fields.length).fill(""),
-          ...state.tableData.slice(action.index + 1)
+        currentTableData: [
+          ...state.currentTableData.slice(0, action.index + 1),
+          new Array(state.currentTableFields.length).fill(""),
+          ...state.currentTableData.slice(action.index + 1)
         ]
       };
     case "DeleteRow":
-      if (state.tableData.length < 2) return state;
+      if (state.currentTableData.length < 2) return state;
       return {
         ...state,
-        tableData: [
-          ...state.tableData.slice(0, action.index),
-          ...state.tableData.slice(action.index + 1)
+        currentTableData: [
+          ...state.currentTableData.slice(0, action.index),
+          ...state.currentTableData.slice(action.index + 1)
         ]
       };
     case "UpdateCell":
       return {
         ...state,
-        tableData: state.tableData.map((row, r) =>
+        currentTableData: state.currentTableData.map((row, r) =>
           row.map((cell, c) =>
             r === action.row && c === action.col ? action.value : cell
           )
@@ -77,12 +97,20 @@ function reducer(state: State, action: Action): State {
     case "UpdateField":
       return {
         ...state,
-        fields: state.fields.map((f, i) => (i === action.col ? action.value : f))
+        currentTableFields: state.currentTableFields.map((f, i) => (i === action.col ? action.value : f))
       };
     case "UpdateTitle":
       return {
         ...state,
-        title: action.value
+        currentTableTitle: action.value
+      };
+    case "SetCurrentTable":
+      return {
+        ...state,
+        currentTableId: action.tableId,
+        currentTableTitle: action.tableTitle,
+        currentTableFields: action.tableFields,
+        currentTableData: action.tableData
       };
     default:
       return state;
