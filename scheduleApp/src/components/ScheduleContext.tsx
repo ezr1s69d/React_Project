@@ -21,10 +21,12 @@ export type Action =
   | { type: "AddColumn" }
   | { type: "AddRow"; index: number }
   | { type: "DeleteRow"; index: number }
-  | { type: "UpdateCell"; row: number; col: number; value: string }
+  | { type: "UpdateCell"; row: number; col: number; value: string; pressedKey: null | string; }
   | { type: "UpdateField"; col: number; value: string }
   | { type: "UpdateTitle"; value: string }
-  | { type: "SetCurrentTable", tableId: string, tableTitle: string, tableFields: string[], tableData: string[][] };
+  | { type: "SetCurrentTable", tableId: string, tableTitle: string, tableFields: string[], tableData: string[][] }
+  | { type: "AddScheduleTable", parentId: string, newTable: Table }
+  | { type: "DeleteScheduleTable", tableId: string };
 
 const initialState: State = {
   Tables: [
@@ -54,10 +56,35 @@ const initialState: State = {
   currentTableTitle: "Root Table",
   currentTableFields: ["time", "name", "place"],
   currentTableData: [
-    ["18:00-19:00", "Ale", "Dining Room"],
+    ["18:00-19:00", "Ale", ""],
     ["19:00-20:00", "Bob", "Bedroom"]
   ]
 };
+
+function addChildTable(tables: Table[], parentId: string, newTable: Table): Table[] {
+  console.log(tables[0].id)
+  return tables.map(table => {
+    if (table.id === parentId) {
+      return {
+        ...table,
+        childTable: [...table.childTable, newTable]
+      };
+    }
+    return {
+      ...table,
+      childTable: addChildTable(table.childTable, parentId, newTable)
+    };
+  });
+}
+
+function deleteTableRecursive(tables: Table[], targetId: string): Table[] {
+  return tables
+    .filter((table) => table.id !== targetId)
+    .map((table) => ({
+      ...table,
+      childTable: deleteTableRecursive(table.childTable, targetId),
+    }));
+}
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -95,6 +122,7 @@ function reducer(state: State, action: Action): State {
         )
       };
     case "UpdateField":
+    console.log(state)
       return {
         ...state,
         currentTableFields: state.currentTableFields.map((f, i) => (i === action.col ? action.value : f))
@@ -112,6 +140,30 @@ function reducer(state: State, action: Action): State {
         currentTableFields: action.tableFields,
         currentTableData: action.tableData
       };
+    case "AddScheduleTable":
+      return {
+        ...state,
+        Tables: addChildTable(state.Tables, action.parentId, action.newTable),
+        currentTableId: action.newTable.id,
+        currentTableTitle: action.newTable.title,
+        currentTableFields: action.newTable.fields,
+        currentTableData: action.newTable.tableData,
+      };
+    case "DeleteScheduleTable": {
+      const newTables = deleteTableRecursive(state.Tables, action.tableId);
+      const isCurrentDeleted = state.currentTableId === action.tableId;
+
+      return {
+        ...state,
+        Tables: newTables,
+        ...(isCurrentDeleted && {
+          currentTableId: newTables[0]?.id ?? "",
+          currentTableTitle: newTables[0]?.title ?? "",
+          currentTableFields: newTables[0]?.fields ?? [],
+          currentTableData: newTables[0]?.tableData ?? [],
+        }),
+      };
+    }
     default:
       return state;
   }
