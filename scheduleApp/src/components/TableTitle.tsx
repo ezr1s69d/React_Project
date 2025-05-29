@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { useScheduleDispatch } from "./ScheduleContext";
+import { useWorkFlowDispatch } from "./WorkFlowContext";
 
-function TableTitle({ title }:{ title: string; }) {
-  const dispatch = useScheduleDispatch();
+function TableTitle({ title }:{ title: string | undefined; }) {
+  const dispatch = useWorkFlowDispatch();
   const [isEditing, setIsEditing] = useState(false);
-  const [tempValue, setTempValue] = useState(title);
+  const tempValue = title ?? "";
 
   const finishEditing = () => {
+    if (!title) return;
     if (!title.trim()) {
       dispatch({ type: "UpdateTitle", value: tempValue })
     }
@@ -16,7 +17,7 @@ function TableTitle({ title }:{ title: string; }) {
   return isEditing ? (
     <input
       type="text"
-      value={title}
+      value={tempValue}
       onChange={(e) => dispatch({ type: "UpdateTitle", value: e.target.value })}
       onBlur={finishEditing}
       onKeyDown={(e) => e.key === "Enter" && finishEditing()}

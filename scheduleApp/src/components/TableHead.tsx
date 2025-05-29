@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { useScheduleDispatch } from "./ScheduleContext";
+import { useWorkFlowDispatch } from "./WorkFlowContext";
 
-function TableHead({ field }:{ field: string[]; }) {
+function TableHead({ field }:{ field: string[] | undefined; }) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [tempValue, setTempValue] = useState("");
-  const dispatch = useScheduleDispatch();
+  const dispatch = useWorkFlowDispatch();
 
   const startEditing = (index: number) => {
+    if (!field) return;
     setEditingIndex(index);
     setTempValue(field[index]);
   };
 
   const finishEditing = (index: number) => {
+    if (!field) return;
     if (!field[index].trim()) {
       dispatch({ type: "UpdateField", col: index, value: tempValue })
     }
@@ -22,7 +24,7 @@ function TableHead({ field }:{ field: string[]; }) {
     <thead>
       <tr>
         <th></th>
-        {field.map((value, index) => (
+        {field?.map((value, index) => (
           <th key={index} scope="col" className="">
             {editingIndex === index ? (
               <input

@@ -1,7 +1,7 @@
-import { useScheduleDispatch } from "./ScheduleContext";
+import { useWorkFlowDispatch } from "./WorkFlowContext";
 
 function ColumnButton() {
-  const dispatch = useScheduleDispatch();
+  const dispatch = useWorkFlowDispatch();
   return (
     <div className="flex gap-2">
       <button

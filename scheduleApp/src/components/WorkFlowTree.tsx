@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useScheduleState, useScheduleDispatch } from "./ScheduleContext";
-import type { Table } from "./ScheduleContext";
+import { useWorkFlowState, useWorkFlowDispatch } from "./WorkFlowContext";
+import type { Table } from "./WorkFlowContext";
 
-function ScheduleTree() {
-  const state = useScheduleState();
-  const dispatch = useScheduleDispatch();
+function WorkFlowTree() {
+  const state = useWorkFlowState();
+  const dispatch = useWorkFlowDispatch();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const renderTree = (node: Table) => (
@@ -32,7 +32,7 @@ function ScheduleTree() {
         {hoveredId === node.id && (
           <div className="flex gap-2 text-sm text-blue-500">
             <button onClick={() => dispatch({
-              type: "AddScheduleTable",
+              type: "AddWorkFlowTable",
               parentId: node.id,
               newTable: {
                 id: "new-id",
@@ -43,7 +43,7 @@ function ScheduleTree() {
               }
             })}
             >✏️</button>
-            <button onClick={() => dispatch({ type: "DeleteScheduleTable", tableId: node.id })}>🗑️</button>
+            <button onClick={() => dispatch({ type: "DeleteWorkFlowTable", tableId: node.id })}>🗑️</button>
             <button onClick={() => alert("Copy " + node.title)}>📋</button>
           </div>
         )}
@@ -58,7 +58,7 @@ function ScheduleTree() {
 
   return (
     <div>
-      <div className="float-left font-bold text-l">ScheduleTree</div>
+      <div className="float-left font-bold text-l">WorkFlowTree</div>
       <br/>
       <div>{renderTree(state.Tables[0])}</div>
     </div>
@@ -66,4 +66,4 @@ function ScheduleTree() {
 };
 
 
-export default ScheduleTree;
+export default WorkFlowTree;

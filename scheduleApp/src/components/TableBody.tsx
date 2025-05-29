@@ -1,59 +1,74 @@
+import TableCell from "./TableCell";
 import RowButton from "./RowButton";
-import { useState } from "react";
-import { useScheduleDispatch } from "./ScheduleContext";
+import { useEffect, useRef, useState } from "react";
+import { useWorkFlowDispatch } from "./WorkFlowContext";
 
-function TableBody({ table }:{ table: string[][]; }) {
+function TableBody({ table }: { table: string[][] | undefined }) {
   const [editingColumn, setEditingColumn] = useState<number | null>(null);
   const [editingRow, setEditingRow] = useState<number | null>(null);
-  const dispatch = useScheduleDispatch();
+  const [clickedColumn, setClickedColumn] = useState<number | null>(null);
+  const dispatch = useWorkFlowDispatch();
 
-  const startEditing = (row: number, column: number) => {
-    setEditingColumn(column);
+  const totalCols = table && table.length > 0 ? Math.max(...table.map((row) => row.length)) : 1;
+
+  const tableRef = useRef<HTMLTableSectionElement>(null);
+
+  const startEditing = (row: number, col: number) => {
     setEditingRow(row);
+    setEditingColumn(col);
+    setClickedColumn(null);
   };
 
-  const finishEditing = (row: number, column: number, key: string | null) => {
-
+  const finishEditing = (row: number, col: number, key: string | null) => {
     if (key === "Enter") {
       setEditingRow(row + 1);
-      setEditingColumn(column);
-    }
-    else {
-      setEditingColumn(null);
+      setEditingColumn(col);
+    } else {
       setEditingRow(null);
+      setEditingColumn(null);
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (tableRef.current && !tableRef.current.contains(e.target as Node)) {
+        setClickedColumn(null);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
   return (
-    <tbody>
-      {table.map((row, rowIndex) => (
+    <tbody ref={tableRef}>
+      {table?.map((row, rowIndex) => (
         <tr key={rowIndex}>
-          <td className="px-2 font-bold">{rowIndex}</td>
+          <td
+            className="px-2 font-bold"
+            onClick={(e) => {
+              e.stopPropagation();
+              setClickedColumn(rowIndex);
+            }}
+          >
+            {rowIndex}
+          </td>
+
           {row.map((value, colIndex) => (
-            <td
+            <TableCell
               key={colIndex}
-              className="border border-gray-400"
-              onClick={() => startEditing(rowIndex, colIndex)}
-            >
-              {editingColumn === colIndex && editingRow === rowIndex ? (
-                <input
-                  type="text"
-                  value={value}
-                  autoFocus
-                  onChange={(e) => dispatch({ type: "UpdateCell", row: rowIndex, col: colIndex, value: e.target.value, pressedKey: null })}
-                  onBlur={() => finishEditing(rowIndex, colIndex, null)}
-                  onKeyDown={(e) => e.key === "Enter" && finishEditing(rowIndex, colIndex, e.key)}
-                  className=""
-                />
-              ) : (
-                <span className="">
-                  {value}
-                </span>
-              )}
-            </td>
+              value={value}
+              row={rowIndex}
+              col={colIndex}
+              colSpan={row.length === 1? totalCols : 1}
+              isEditing={editingRow === rowIndex && editingColumn === colIndex}
+              onStartEdit={startEditing}
+              onFinishEdit={finishEditing}
+              dispatch={dispatch}
+            />
           ))}
-          <td className="">
-            <RowButton rowIndex={rowIndex} />
+
+          <td>
+            {clickedColumn === rowIndex && <RowButton rowIndex={rowIndex} />}
           </td>
         </tr>
       ))}

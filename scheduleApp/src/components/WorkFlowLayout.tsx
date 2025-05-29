@@ -1,14 +1,18 @@
-import { useScheduleState } from "./ScheduleContext";
+import { useWorkFlowState } from "./WorkFlowContext";
 import TableTitle from "./TableTitle";
 import ColumnButton from "./ColumnButton";
 import SubmitButton from "./SubmitButton";
 import TableHead from "./TableHead";
 import TableBody from "./TableBody";
-import ScheduleTree from "./ScheduleTree";
+import WorkFlowTree from "./WorkFlowTree";
+import { findTableById } from "./WorkFlowContext";
 
-function ScheduleLayout() {
-  const state = useScheduleState();
-  const { currentTableTitle, currentTableFields, currentTableData } = state;
+function WorkFlowLayout() {
+  const state = useWorkFlowState();
+  const table = findTableById(state.Tables, state.currentTableId)
+  const currentTableTitle = table?.title
+  const currentTableFields = table?.fields
+  const currentTableData = table?.tableData
 
   return (
     <div className="p-1 h-screen">
@@ -19,7 +23,7 @@ function ScheduleLayout() {
       </div>
       <div className="flex items-start h-[calc(100vh-100px)]">
         <div className="w-[300px] p-4 overflow-auto border-r h-full">
-          <ScheduleTree />
+          <WorkFlowTree />
         </div>
         <div className="flex-1 p-4 overflow-auto h-full">
           <div className="h-full overflow-auto border rounded">
@@ -34,4 +38,4 @@ function ScheduleLayout() {
   );
 }
 
-export default ScheduleLayout;
+export default WorkFlowLayout;
