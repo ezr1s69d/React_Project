@@ -1,60 +1,9 @@
 import { createContext, useReducer, useContext } from "react";
 import type { ReactNode } from "react";
-
-export interface Table {
-  id: string;
-  title: string;
-  fields: string[];
-  tableData: string[][];
-  childTable: Table[];
-}
-
-export interface State {
-  Tables: Table[];
-  currentTableId: string;
-}
-
-export type Action =
-  | { type: "AddColumn" }
-  | { type: "AddRow"; index: number; link: boolean }
-  | { type: "DeleteRow"; index: number }
-  | { type: "ChildTableLink"; index: number}
-  | { type: "UpdateCell"; row: number; col: number; value: string; pressedKey: null | string; }
-  | { type: "UpdateField"; col: number; value: string }
-  | { type: "UpdateTitle"; value: string }
-  | { type: "SetCurrentTable", tableId: string, tableTitle: string, tableFields: string[], tableData: string[][] }
-  | { type: "AddWorkFlowTable", parentId: string, newTable: Table }
-  | { type: "DeleteWorkFlowTable", tableId: string };
-
-const initialState: State = {
-  Tables: [
-    {
-      id: "root",
-      title: "總細流",
-      fields: ["時間", "負責人", "地點", "工作人員"],
-      tableData: [
-        ["18:00-19:00", "A", "社辦", "C, D"],
-        ["19:00-20:00", "B", "浩然前草地", "E, F"]
-      ],
-      childTable: [
-        {
-          id: "child1",
-          title: "子細流",
-          fields: ["時間", "負責人", "地點", "工作人員"],
-          tableData: [
-            ["18:00-19:00", "A", "社辦", "G, H"],
-            ["19:00-20:00", "B", "浩然前草地", "I, J"]
-          ],
-          childTable: []
-        }
-      ]
-    }
-  ],
-  currentTableId: "root",
-};
+import type { Table, State, Action } from "../util/type";
+import { initialState } from "../util/type";
 
 function addChildTable(tables: Table[], parentId: string, newTable: Table): Table[] {
-  console.log(tables[0].id)
   return tables.map(table => {
     if (table.id === parentId) {
       return {
@@ -136,8 +85,20 @@ function reducer(state: State, action: Action): State {
         ...state,
         Tables: updateTableById(state.Tables, state.currentTableId, (table) => ({
           ...table,
-          fields: [...table.fields, "new field"],
+          fields: [...table.fields, { name: "新項目", type: "text" }],
           tableData: table.tableData.map(row => row.length === 1 ? [...row] : [...row, ""])
+        }))
+      };
+    case "DeleteColumn":
+      return {
+        ...state,
+        Tables: updateTableById(state.Tables, state.currentTableId, (table) => ({
+          ...table,
+          fields: table.fields.length > 5 ? table.fields.slice(0, -1) : table.fields,
+          tableData: 
+            table.fields.length > 5
+            ? table.tableData.map(col => col.length === 1 ? [...col] : col.slice(0, -1))
+            : table.tableData
         }))
       };
 
@@ -201,7 +162,6 @@ function reducer(state: State, action: Action): State {
       return state;
   }
 }
-
 
 const WorkFlowStateContext = createContext<State | undefined>(undefined);
 const WorkFlowDispatchContext = createContext<React.Dispatch<Action> | undefined>(undefined);

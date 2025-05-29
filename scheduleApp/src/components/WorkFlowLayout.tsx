@@ -19,7 +19,7 @@ function WorkFlowLayout() {
       <div className="mb-4 flex justify-center gap-4">
         <TableTitle title={currentTableTitle} />
         <ColumnButton />
-        <SubmitButton handleSubmit={() => {}} />
+        {/* <SubmitButton handleSubmit={() => {}} /> */}
       </div>
       <div className="flex items-start h-[calc(100vh-100px)]">
         <div className="w-[300px] p-4 overflow-auto border-r h-full">
@@ -29,7 +29,7 @@ function WorkFlowLayout() {
           <div className="h-full overflow-auto border rounded">
             <table className="border-collapse w-100">
               <TableHead field={currentTableFields} />
-              <TableBody table={currentTableData} />
+              <TableBody table={currentTableData} field={currentTableFields} />
             </table>
           </div>
         </div>

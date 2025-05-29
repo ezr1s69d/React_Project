@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useWorkFlowState, useWorkFlowDispatch } from "./WorkFlowContext";
-import type { Table } from "./WorkFlowContext";
+import type { Table } from "../util/type";
 
 function WorkFlowTree() {
   const state = useWorkFlowState();
@@ -35,10 +35,16 @@ function WorkFlowTree() {
               type: "AddWorkFlowTable",
               parentId: node.id,
               newTable: {
-                id: "new-id",
-                title: "New Child Table",
-                fields: ["time", "name", "place"],
-                tableData: [["", "", ""], ["", "", ""]],
+                id: `table-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                title: "新子流",
+                fields: [
+                  { name: "開始時間", type: "time" }, 
+                  { name: "結束時間", type: "time" },
+                  { name: "負責人", type: "text"},
+                  { name: "地點", type: "text" },
+                  { name: "工作人員", type: "text"}
+                ],
+                tableData: [new Array(5).fill(""), new Array(5).fill("")],
                 childTable: []
               }
             })}

@@ -1,9 +1,10 @@
 import TableCell from "./TableCell";
 import RowButton from "./RowButton";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useWorkFlowDispatch } from "./WorkFlowContext";
+import type { Fields } from "../util/type";
 
-function TableBody({ table }: { table: string[][] | undefined }) {
+function TableBody({ table, field }: { table: string[][] | undefined, field: Fields[] | undefined }) {
   const [editingColumn, setEditingColumn] = useState<number | null>(null);
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [clickedColumn, setClickedColumn] = useState<number | null>(null);
@@ -11,15 +12,17 @@ function TableBody({ table }: { table: string[][] | undefined }) {
 
   const totalCols = table && table.length > 0 ? Math.max(...table.map((row) => row.length)) : 1;
 
-  const tableRef = useRef<HTMLTableSectionElement>(null);
-
   const startEditing = (row: number, col: number) => {
     setEditingRow(row);
     setEditingColumn(col);
-    setClickedColumn(null);
   };
 
   const finishEditing = (row: number, col: number, key: string | null) => {
+    if(!table) return;
+    if (col === 1 && table[row][col - 1] > table[row][col]) {
+      dispatch({ type: "UpdateCell", row, col, value: table[row][col - 1], pressedKey: key})
+    }
+
     if (key === "Enter") {
       setEditingRow(row + 1);
       setEditingColumn(col);
@@ -29,33 +32,22 @@ function TableBody({ table }: { table: string[][] | undefined }) {
     }
   };
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (tableRef.current && !tableRef.current.contains(e.target as Node)) {
-        setClickedColumn(null);
-      }
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
-
   return (
-    <tbody ref={tableRef}>
+    <tbody>
       {table?.map((row, rowIndex) => (
-        <tr key={rowIndex}>
-          <td
-            className="px-2 font-bold"
-            onClick={(e) => {
-              e.stopPropagation();
-              setClickedColumn(rowIndex);
-            }}
-          >
+        <tr 
+          key={rowIndex} 
+          onMouseOver={(e) => { e.stopPropagation(); setClickedColumn(rowIndex); }}
+          onMouseOut={(e) => { e.stopPropagation(); setClickedColumn(null); }}
+        >
+          <td className="px-2 font-bold">
             {rowIndex}
           </td>
 
           {row.map((value, colIndex) => (
             <TableCell
               key={colIndex}
+              type={field? field[colIndex].type : "undefined"}
               value={value}
               row={rowIndex}
               col={colIndex}
@@ -63,7 +55,6 @@ function TableBody({ table }: { table: string[][] | undefined }) {
               isEditing={editingRow === rowIndex && editingColumn === colIndex}
               onStartEdit={startEditing}
               onFinishEdit={finishEditing}
-              dispatch={dispatch}
             />
           ))}
 

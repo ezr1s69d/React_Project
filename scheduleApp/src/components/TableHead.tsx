@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useWorkFlowDispatch } from "./WorkFlowContext";
+import type { Fields } from "../util/type";
 
-function TableHead({ field }:{ field: string[] | undefined; }) {
+function TableHead({ field }:{ field: Fields[] | undefined; }) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [tempValue, setTempValue] = useState("");
   const dispatch = useWorkFlowDispatch();
@@ -9,13 +10,13 @@ function TableHead({ field }:{ field: string[] | undefined; }) {
   const startEditing = (index: number) => {
     if (!field) return;
     setEditingIndex(index);
-    setTempValue(field[index]);
+    setTempValue(field[index].name);
   };
 
   const finishEditing = (index: number) => {
     if (!field) return;
-    if (!field[index].trim()) {
-      dispatch({ type: "UpdateField", col: index, value: tempValue })
+    if (!field[index].name.trim()) {
+      dispatch({ type: "UpdateField", col: index, value: { name: tempValue, type: field[index].type } })
     }
     setEditingIndex(null);
   };
@@ -29,16 +30,16 @@ function TableHead({ field }:{ field: string[] | undefined; }) {
             {editingIndex === index ? (
               <input
                 type="text"
-                value={value}
+                value={value.name}
                 autoFocus
-                onChange={(e) => dispatch({ type: "UpdateField", col: index, value: e.target.value })}
+                onChange={(e) => dispatch({ type: "UpdateField", col: index, value: { name: e.target.value, type: field[index].type } })}
                 onBlur={() => finishEditing(index)}
                 onKeyDown={(e) => e.key === "Enter" && finishEditing(index)}
                 className="w-full"
               />
             ) : (
               <span onClick={() => startEditing(index)} className="cursor-pointer">
-                {value}
+                {value.name}
               </span>
             )}
           </th>
