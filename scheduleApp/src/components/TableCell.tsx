@@ -1,5 +1,6 @@
-import { useWorkFlowDispatch } from "./WorkFlowContext";
-// import type { Person } from "../type";
+import { useWorkFlowDispatch, useWorkFlowState } from "./WorkFlowContext";
+import AutocompleteInput from "../util/AutoCompleteInput";
+import { PeopleList, type Table } from "../util/type";
 
 interface EditableCellProps {
   value: string;
@@ -12,6 +13,7 @@ interface EditableCellProps {
   onFinishEdit: (row: number, col: number, key: string | null) => void;
 }
 
+
 function TableCell({
   value,
   type,
@@ -22,9 +24,37 @@ function TableCell({
   onStartEdit,
   onFinishEdit,
 }: EditableCellProps) {
-  const decoration = colSpan === 1? "border border-gray-400" : "border border-gray-400 text-center";
-  const type_ = colSpan > 1 ? "text" : type;
   const dispatch = useWorkFlowDispatch();
+  const state = useWorkFlowState();
+  const decoration = colSpan === 1 ? "border border-gray-400" : "border border-gray-400 text-center";
+
+  const type_ = colSpan > 1 ? "link" : type;
+  let autocompleteOptions_: string[] | undefined;
+
+  function findAllTable(node: Table): string[] {
+    const titles: string[] = [node.title];
+    if (node.childTable) {
+      for (const child of node.childTable) {
+        titles.push(...findAllTable(child));
+      }
+    }
+
+    return titles;
+  }
+
+  switch(type_) {
+    case "name":
+      autocompleteOptions_ = PeopleList.map(p => p.name);
+      break;
+    case "group":
+      autocompleteOptions_ = PeopleList.map(p => p.name);
+      break;
+    case "link":
+      autocompleteOptions_ = findAllTable(state.Tables[0]);
+      break;
+    default:
+      autocompleteOptions_ = undefined;
+  }
 
   return (
     <td
@@ -36,27 +66,28 @@ function TableCell({
       }}
     >
       {isEditing ? (
-        <input
+        <AutocompleteInput
           type={type_}
           value={value}
-          autoFocus
-          onChange={(e) =>
+          row={row}
+          col={col}
+          autocompleteOptions={autocompleteOptions_}
+          onChange={(val) =>
             dispatch({
               type: "UpdateCell",
               row,
               col,
-              value: e.target.value,
+              value: val,
               pressedKey: null,
             })
           }
-          onBlur={() => onFinishEdit(row, col, null)}
-          onKeyDown={(e) => e.key === "Enter" && onFinishEdit(row, col, e.key)}
+          onFinishEdit={(key) => onFinishEdit(row, col, key)}
         />
       ) : (
-        <span>{value}</span>
+        <span>{colSpan > 1 ? "點我進入流程: " : ""}{value}</span>
       )}
     </td>
   );
 }
 
-export default TableCell;
+export default TableCell

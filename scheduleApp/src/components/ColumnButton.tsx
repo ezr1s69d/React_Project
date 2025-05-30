@@ -2,21 +2,24 @@ import { useWorkFlowDispatch } from "./WorkFlowContext";
 
 function ColumnButton() {
   const dispatch = useWorkFlowDispatch();
+  const decoration_left = "w-5 h-5 ml-2 transition duration-150 flex items-center justify-center text-sm"
+  const decoration_right = "w-5 h-5 transition duration-150 flex items-center justify-center text-sm"
+
   return (
     <div className="flex gap-2">
       <button
-        type="button"
         onClick={() => dispatch({ type: "AddColumn" })}
-        className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition"
+        className={decoration_left}
+        title="Add Column"
       >
-        新增項目
+        ➕
       </button>
       <button
-        type="button"
         onClick={() => dispatch({ type: "DeleteColumn" })}
-        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+        className={decoration_right}
+        title="Delete Column"
       >
-        刪除項目
+        🗑️
       </button>
     </div>
   );

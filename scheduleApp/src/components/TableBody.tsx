@@ -18,8 +18,8 @@ function TableBody({ table, field }: { table: string[][] | undefined, field: Fie
   };
 
   const finishEditing = (row: number, col: number, key: string | null) => {
-    if(!table) return;
-    if (col === 1 && table[row][col - 1] > table[row][col]) {
+    if(!table || !field) return;
+    if (field[col].type === "time" && table[row][col - 1] > table[row][col]) {
       dispatch({ type: "UpdateCell", row, col, value: table[row][col - 1], pressedKey: key})
     }
 

@@ -1,8 +1,7 @@
 import { useWorkFlowState } from "./WorkFlowContext";
 import TableTitle from "./TableTitle";
-import ColumnButton from "./ColumnButton";
 import SubmitButton from "./SubmitButton";
-import TableHead from "./TableHead";
+import TableHead from "./TableField";
 import TableBody from "./TableBody";
 import WorkFlowTree from "./WorkFlowTree";
 import { findTableById } from "./WorkFlowContext";
@@ -18,7 +17,6 @@ function WorkFlowLayout() {
     <div className="p-1 h-screen">
       <div className="mb-4 flex justify-center gap-4">
         <TableTitle title={currentTableTitle} />
-        <ColumnButton />
         {/* <SubmitButton handleSubmit={() => {}} /> */}
       </div>
       <div className="flex items-start h-[calc(100vh-100px)]">

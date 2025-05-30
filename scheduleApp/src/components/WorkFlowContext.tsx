@@ -94,9 +94,9 @@ function reducer(state: State, action: Action): State {
         ...state,
         Tables: updateTableById(state.Tables, state.currentTableId, (table) => ({
           ...table,
-          fields: table.fields.length > 5 ? table.fields.slice(0, -1) : table.fields,
+          fields: table.fields.length > 2 ? table.fields.slice(0, -1) : table.fields,
           tableData: 
-            table.fields.length > 5
+            table.fields.length > 2
             ? table.tableData.map(col => col.length === 1 ? [...col] : col.slice(0, -1))
             : table.tableData
         }))
@@ -125,10 +125,10 @@ function reducer(state: State, action: Action): State {
         Tables: updateTableById(state.Tables, state.currentTableId, (table) => {
           return {
             ...table,
-            tableData: [
+            tableData: table.tableData.length > 1 ?[
               ...table.tableData.slice(0, action.index),
               ...table.tableData.slice(action.index + 1)
-            ]
+            ] : table.tableData
           };
         })
       };

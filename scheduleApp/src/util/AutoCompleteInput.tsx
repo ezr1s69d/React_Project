@@ -1,69 +1,89 @@
-import React from "react";
-import type { Person } from "./type";
+import { useEffect, useState, useRef } from "react";
 
 interface AutocompleteInputProps {
-  suggestions: Person[];
+  type: string;
   value: string;
-  onChange: (val: string) => void;
-  onFinishEdit: () => void;
+  row: number;
+  col: number;
+  autocompleteOptions?: string[];
+  onChange: (value: string) => void;
+  onFinishEdit: (key: string | null) => void;
 }
 
-function AutocompleteInput({ suggestions, value, onChange, onFinishEdit }: AutocompleteInputProps) {
-  const [filtered, setFiltered] = React.useState<Person[]>([]);
-  const [showSuggestions, setShowSuggestions] = React.useState(false);
+function AutocompleteInput({
+  type,
+  value,
+  row,
+  col,
+  autocompleteOptions = [],
+  onChange,
+  onFinishEdit,
+}: AutocompleteInputProps) {
+  const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
-    if (value.length > 0) {
-      setFiltered(suggestions.filter((p) => p.name.includes(value)));
-      setShowSuggestions(true);
+  const listId = `autocomplete-${row}-${col}`;
+
+
+  if (type === "name" || type === "group" || type === "link") {
+      const parts = value.split(",");
+      const currentInput = parts.pop()?.trim() || "";
+      const currentValue = parts.map(part => part.trim());
+
+      autocompleteOptions = autocompleteOptions
+        .filter(val => !currentValue.includes(val) && val.includes(currentInput))
+        .map(val => val);
+      type = "text";
+  }
+
+  useEffect(() => {
+    const lastInput = value.split(",").pop()?.trim().toLowerCase() || "";
+    if (lastInput) {
+      const filtered = autocompleteOptions.filter(opt =>
+        opt.toLowerCase().includes(lastInput)
+      );
+      setFilteredOptions(filtered);
+      setShowDropdown(true);
     } else {
-      setShowSuggestions(false);
+      setFilteredOptions([]);
+      setShowDropdown(false);
     }
-  }, [value, suggestions]);
+  }, [value, autocompleteOptions]);
 
-  const handleSelect = (person: Person) => {
-    onChange(person.name);
-    setShowSuggestions(false);
-    onFinishEdit();
+  const handleSelect = (name: string) => {
+    const parts = value.split(",");
+    parts[parts.length - 1] = ` ${name}`; // 保留前段
+    const newValue = parts.join(",").trimStart();
+    onChange(newValue);
+    setShowDropdown(false);
+    inputRef.current?.focus();
   };
 
   return (
-    <div style={{ position: "relative" }}>
+    <div className="relative w-full">
       <input
+        ref={inputRef}
+        type={type === "select" ? "text" : type}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={() => {
-          // 延遲收起，讓點擊選項事件能觸發
-          setTimeout(() => setShowSuggestions(false), 200);
-          onFinishEdit();
-        }}
         autoFocus
+        list={listId}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={() => {onFinishEdit(null); setShowDropdown(false)}}
+        onFocus={() => {
+          if (filteredOptions.length > 0) setShowDropdown(true);
+        }}
+        onKeyDown={(e) => e.key === "Enter" && onFinishEdit(e.key)}
       />
-      {showSuggestions && filtered.length > 0 && (
-        <ul
-          style={{
-            position: "absolute",
-            backgroundColor: "white",
-            border: "1px solid #ccc",
-            width: "100%",
-            maxHeight: 120,
-            overflowY: "auto",
-            margin: 0,
-            padding: 0,
-            listStyle: "none",
-            zIndex: 10,
-          }}
-        >
-          {filtered.map((p) => (
+      {showDropdown && filteredOptions.length > 0 && (
+        <ul className="absolute z-10 bg-white border border-gray-300 w-full max-h-48 overflow-y-auto shadow-lg rounded mt-1">
+          {filteredOptions.map((option, idx) => (
             <li
-              key={p.id}
-              onMouseDown={(e) => {
-                e.preventDefault(); // 防止 input blur 先觸發
-                handleSelect(p);
-              }}
-              style={{ padding: 6, cursor: "pointer" }}
+              key={idx}
+              onMouseDown={() => handleSelect(option)}
+              className="px-4 py-2 cursor-pointer hover:bg-blue-100"
             >
-              {p.name}
+              {option}
             </li>
           ))}
         </ul>
@@ -71,3 +91,5 @@ function AutocompleteInput({ suggestions, value, onChange, onFinishEdit }: Autoc
     </div>
   );
 }
+
+export default AutocompleteInput;

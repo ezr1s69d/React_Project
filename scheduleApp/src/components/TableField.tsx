@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useWorkFlowDispatch } from "./WorkFlowContext";
-import type { Fields } from "../util/type";
+import AutocompleteInput from "../util/AutoCompleteInput"
+import { type Fields, FieldsList } from "../util/type";
+import ColumnButton from "./ColumnButton";
 
 function TableHead({ field }:{ field: Fields[] | undefined; }) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -28,14 +30,14 @@ function TableHead({ field }:{ field: Fields[] | undefined; }) {
         {field?.map((value, index) => (
           <th key={index} scope="col" className="">
             {editingIndex === index ? (
-              <input
+              <AutocompleteInput
                 type="text"
                 value={value.name}
-                autoFocus
-                onChange={(e) => dispatch({ type: "UpdateField", col: index, value: { name: e.target.value, type: field[index].type } })}
-                onBlur={() => finishEditing(index)}
-                onKeyDown={(e) => e.key === "Enter" && finishEditing(index)}
-                className="w-full"
+                row={9999}
+                col={index}
+                autocompleteOptions={FieldsList.map(f => f.name)}
+                onChange={(e) => dispatch({ type: "UpdateField", col: index, value: { name: e, type: field[index].type } })}
+                onFinishEdit={() => finishEditing(index)}
               />
             ) : (
               <span onClick={() => startEditing(index)} className="cursor-pointer">
@@ -44,6 +46,9 @@ function TableHead({ field }:{ field: Fields[] | undefined; }) {
             )}
           </th>
         ))}
+      <td className="">
+        <ColumnButton />
+      </td>
       </tr>
     </thead>
   );
