@@ -27,6 +27,15 @@ function deleteTableRecursive(tables: Table[], targetId: string): Table[] {
     }));
 }
 
+export function findParentTableById(tables: Table[], targetId: string): Table | undefined {
+  for (const table of tables) {
+    if (table.childTable.some(child => child.id === targetId)) return table;
+    const found = findParentTableById(table.childTable, targetId);
+    if (found) return found;
+  }
+  return undefined;
+}
+
 export function findTableById(tables: Table[], targetId: string): Table | undefined {
   for (const table of tables) {
     if (table.id === targetId) return table;
@@ -51,13 +60,33 @@ function updateTableById(tables: Table[], targetId: string, updater: (table: Tab
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
+    case "UpdateLinkCell":
+      const modifiedTable = findParentTableById(state.Tables, action.link)
+      if (!modifiedTable) return state;
+      return {
+        ...state,
+        Tables: updateTableById(state.Tables, modifiedTable?.id, (table) => ({
+          ...table,
+          tableData: table.tableData.map((row) =>
+            row.map((cell) =>
+              cell.type === "link" && 'link' in cell && cell.link === action.link
+                ? { ...cell, name: action.value }
+                : cell
+            )
+          )
+        }))
+      };
     case "UpdateCell":
       return {
         ...state,
         Tables: updateTableById(state.Tables, state.currentTableId, (table) => ({
           ...table,
           tableData: table.tableData.map((row, r) =>
-            row.map((cell, c) => (r === action.row && c === action.col ? action.value : cell))
+            row.map((cell, c) =>
+              r === action.row && c === action.col
+                ? { ...cell, name: action.value } // 只改 name
+                : cell
+            )
           )
         }))
       };
@@ -86,7 +115,7 @@ function reducer(state: State, action: Action): State {
         Tables: updateTableById(state.Tables, state.currentTableId, (table) => ({
           ...table,
           fields: [...table.fields, { name: "新項目", type: "text" }],
-          tableData: table.tableData.map(row => row.length === 1 ? [...row] : [...row, ""])
+          tableData: table.tableData.map(row => row.length === 1 ? [...row] : [...row, {name: "", type: "text"}])
         }))
       };
     case "DeleteColumn":
@@ -106,9 +135,12 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         Tables: updateTableById(state.Tables, state.currentTableId, (table) => {
-          const newRow = action.link === true 
-            ? new Array(1).fill("")
-            : new Array(table.fields.length).fill("");
+          const newRow = action.link
+            ? [{ name: "", type: "link", link: action.link }] // dont forget to add link
+            : findTableById(state.Tables, state.currentTableId)?.fields.map(f => ({
+                name: "",
+                type: f.type
+              })) ?? [];
           return {
             ...table,
             tableData: [
@@ -143,7 +175,7 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         Tables: addChildTable(state.Tables, action.parentId, action.newTable),
-        currentTableId: action.newTable.id
+        // currentTableId: action.newTable.id
       };
 
     case "DeleteWorkFlowTable": {

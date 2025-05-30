@@ -3,8 +3,6 @@ import { useEffect, useState, useRef } from "react";
 interface AutocompleteInputProps {
   type: string;
   value: string;
-  row: number;
-  col: number;
   autocompleteOptions?: string[];
   onChange: (value: string) => void;
   onFinishEdit: (key: string | null) => void;
@@ -13,8 +11,6 @@ interface AutocompleteInputProps {
 function AutocompleteInput({
   type,
   value,
-  row,
-  col,
   autocompleteOptions = [],
   onChange,
   onFinishEdit,
@@ -23,7 +19,7 @@ function AutocompleteInput({
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const listId = `autocomplete-${row}-${col}`;
+  const listId = `autocomplete-${Date.now().toString()}`;
 
 
   if (type === "name" || type === "group" || type === "link") {

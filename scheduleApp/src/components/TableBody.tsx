@@ -2,15 +2,18 @@ import TableCell from "./TableCell";
 import RowButton from "./RowButton";
 import { useState } from "react";
 import { useWorkFlowDispatch } from "./WorkFlowContext";
-import type { Fields } from "../util/type";
+import type { Table, Cell } from "../util/type";
 
-function TableBody({ table, field }: { table: string[][] | undefined, field: Fields[] | undefined }) {
+function TableBody({ table }: { table: Table | undefined }) {
+  if (!table) return null;
   const [editingColumn, setEditingColumn] = useState<number | null>(null);
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [clickedColumn, setClickedColumn] = useState<number | null>(null);
   const dispatch = useWorkFlowDispatch();
 
-  const totalCols = table && table.length > 0 ? Math.max(...table.map((row) => row.length)) : 1;
+  const tableData = table.tableData;
+  const fields = table.fields;
+  const totalCols = tableData.length > 0 ? Math.max(...tableData.map((row) => row.length)) : 1;
 
   const startEditing = (row: number, col: number) => {
     setEditingRow(row);
@@ -18,9 +21,21 @@ function TableBody({ table, field }: { table: string[][] | undefined, field: Fie
   };
 
   const finishEditing = (row: number, col: number, key: string | null) => {
-    if(!table || !field) return;
-    if (field[col].type === "time" && table[row][col - 1] > table[row][col]) {
-      dispatch({ type: "UpdateCell", row, col, value: table[row][col - 1], pressedKey: key})
+    if (!table || !fields) return;
+
+    // 檢查時間欄位合法性（例如開始時間不能晚於結束時間）
+    if (
+      fields[col].type === "time" &&
+      col > 0 &&
+      tableData[row][col - 1].name > tableData[row][col].name
+    ) {
+      dispatch({
+        type: "UpdateCell",
+        row,
+        col,
+        value: tableData[row][col - 1].name,
+        pressedKey: key,
+      });
     }
 
     if (key === "Enter") {
@@ -34,33 +49,35 @@ function TableBody({ table, field }: { table: string[][] | undefined, field: Fie
 
   return (
     <tbody>
-      {table?.map((row, rowIndex) => (
-        <tr 
-          key={rowIndex} 
-          onMouseOver={(e) => { e.stopPropagation(); setClickedColumn(rowIndex); }}
-          onMouseOut={(e) => { e.stopPropagation(); setClickedColumn(null); }}
+      {tableData.map((row, rowIndex) => (
+        <tr
+          key={rowIndex}
+          onMouseOver={(e) => {
+            e.stopPropagation();
+            setClickedColumn(rowIndex);
+          }}
+          onMouseOut={(e) => {
+            e.stopPropagation();
+            setClickedColumn(null);
+          }}
         >
-          <td className="px-2 font-bold">
-            {rowIndex}
-          </td>
+          <td className="px-2 font-bold">{rowIndex}</td>
 
-          {row.map((value, colIndex) => (
+          {row.map((cell: Cell, colIndex) => (
             <TableCell
               key={colIndex}
-              type={field? field[colIndex].type : "undefined"}
-              value={value}
+              type={cell.type}
+              cell={cell} // ⬅ 傳入 Cell.name
               row={rowIndex}
               col={colIndex}
-              colSpan={row.length === 1? totalCols : 1}
+              colSpan={cell.type === "link" ? totalCols : 1}
               isEditing={editingRow === rowIndex && editingColumn === colIndex}
-              onStartEdit={startEditing}
-              onFinishEdit={finishEditing}
+              onStartEdit={() => startEditing(rowIndex, colIndex)}
+              onFinishEdit={(key) => finishEditing(rowIndex, colIndex, key)}
             />
           ))}
 
-          <td>
-            {clickedColumn === rowIndex && <RowButton rowIndex={rowIndex} />}
-          </td>
+          <td>{clickedColumn === rowIndex && <RowButton rowIndex={rowIndex} />}</td>
         </tr>
       ))}
     </tbody>

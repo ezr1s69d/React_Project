@@ -3,24 +3,38 @@ export interface Person {
     name: string;
 }
 
+type OtherCell = {
+  name: string;
+  type: string;
+};
+
+type LinkCell = {
+  name: string;
+  type: "link";
+  link: string;
+};
+
+export type Cell = OtherCell | LinkCell;
+
 export interface Fields {
   name: string;
   type: string;
 }
 
 export const FieldsList: Fields[] = [
-        { name: "開始時間", type: "time" }, 
-        { name: "結束時間", type: "time" },
-        { name: "負責人", type: "name"},
-        { name: "地點", type: "text" },
-        { name: "工作人員", type: "group"},
-      ]
+  { name: "開始時間", type: "time" }, 
+  { name: "結束時間", type: "time" },
+  { name: "負責人", type: "name"},
+  { name: "地點", type: "text" },
+  { name: "工作人員", type: "group"},
+  { name: "備註", type: "text"}
+]
 
 export interface Table {
   id: string;
   title: string;
   fields: Fields[];
-  tableData: string[][];
+  tableData: Cell[][];
   childTable: Table[];
 }
 
@@ -32,13 +46,13 @@ export interface State {
 export type Action =
   | { type: "AddColumn" }
   | { type: "DeleteColumn" }
-  | { type: "AddRow"; index: number; link: boolean }
+  | { type: "AddRow"; index: number; link: string | null }
   | { type: "DeleteRow"; index: number }
-  | { type: "ChildTableLink"; index: number}
+  | { type: "UpdateLinkCell", value: string, link: string }
   | { type: "UpdateCell"; row: number; col: number; value: string; pressedKey: null | string; }
   | { type: "UpdateField"; col: number; value: Fields }
   | { type: "UpdateTitle"; value: string }
-  | { type: "SetCurrentTable", tableId: string, tableTitle: string, tableFields: Fields[], tableData: string[][] }
+  | { type: "SetCurrentTable", tableId: string }
   | { type: "AddWorkFlowTable", parentId: string, newTable: Table }
   | { type: "DeleteWorkFlowTable", tableId: string };
 
@@ -74,8 +88,21 @@ export const initialState: State = {
         FieldsList[4],
       ],
       tableData: [
-        ["18:00", "19:00", PeopleList[0].name, "社辦", PeopleList[2].name],
-        ["19:00", "20:00", PeopleList[1].name, "浩然前草地", PeopleList[3].name]
+        [
+          { name: "18:00", type: FieldsList[0].type}, 
+          { name: "19:00", type: FieldsList[1].type},
+          { name: PeopleList[0].name, type: FieldsList[2].type},
+          { name: "社辦", type: FieldsList[3].type}, 
+          { name: PeopleList[2].name, type: FieldsList[4].type},
+        ],
+        [{ name: "子細流", type: "link", link: "child1"}],
+        [
+          { name: "19:00", type: FieldsList[0].type}, 
+          { name: "20:00", type: FieldsList[1].type},
+          { name: PeopleList[1].name, type: FieldsList[2].type},
+          { name: "浩然前草地", type: FieldsList[3].type}, 
+          { name: PeopleList[3].name, type: FieldsList[4].type},
+        ],
       ],
       childTable: [
         {
@@ -89,9 +116,21 @@ export const initialState: State = {
             FieldsList[4],
           ],
           tableData: [
-            ["18:00", "19:00", PeopleList[0].name, "社辦", PeopleList[9].name],
-            ["19:00", "20:00", PeopleList[1].name, "浩然前草地", PeopleList[8].name]
-          ],
+            [
+              { name: "18:00", type: FieldsList[0].type}, 
+              { name: "19:00", type: FieldsList[1].type},
+              { name: PeopleList[0].name, type: FieldsList[2].type},
+              { name: "社辦", type: FieldsList[3].type}, 
+              { name: PeopleList[9].name, type: FieldsList[4].type},
+            ],
+            [
+              { name: "19:00", type: FieldsList[0].type}, 
+              { name: "20:00", type: FieldsList[1].type},
+              { name: PeopleList[1].name, type: FieldsList[2].type},
+              { name: "浩然前草地", type: FieldsList[3].type}, 
+              { name: PeopleList[8].name, type: FieldsList[4].type},
+            ],
+              ],
           childTable: []
         }
       ]

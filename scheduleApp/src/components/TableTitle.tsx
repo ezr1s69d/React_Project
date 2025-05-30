@@ -1,33 +1,59 @@
 import { useState } from "react";
 import { useWorkFlowDispatch } from "./WorkFlowContext";
 
-function TableTitle({ title }:{ title: string | undefined; }) {
+function TableTitle({ id, title }:{ id: string | undefined, title: string | undefined; }) {
   const dispatch = useWorkFlowDispatch();
   const [isEditing, setIsEditing] = useState(false);
-  const tempValue = title ?? "";
+  const [tempValue, setTempValue] = useState<string | null>(null);
+
+  const startEditing = () => {
+    setIsEditing(true);
+    if (title) setTempValue(title)
+  }
 
   const finishEditing = () => {
-    if (!title) return;
-    if (!title.trim()) {
-      dispatch({ type: "UpdateTitle", value: tempValue })
-    }
+    if (!id || !tempValue) return;
+    if (!title?.trim()) dispatch({ type: "UpdateTitle", value: tempValue })
+    // dispatch({ type: "UpdateLinkCell", value: tempValue, link: id });
     setIsEditing(false);
+    setTempValue(null);
   };
 
   return isEditing ? (
+    // <input
+    //   type="text"
+    //   value={tempValue}
+    //   onChange={(e) => {
+    //     dispatch({ type: "UpdateTitle", value: e.target.value });
+    //     if(id) dispatch({ type: "UpdateLinkCell", value: e.target.value, link: id });
+    //   }}
+    //   onBlur={finishEditing}
+    //   onKeyDown={(e) => e.key === "Enter" && finishEditing()}
+    //   autoFocus
+    //   className="w-full text-2xl font-bold border-b-2 border-gray-400 px-2 py-1"
+    // />
     <input
       type="text"
-      value={tempValue}
-      onChange={(e) => dispatch({ type: "UpdateTitle", value: e.target.value })}
+      value={title}
+      onChange={(e) => {
+        dispatch({ type: "UpdateTitle", value: e.target.value });
+        if(id) dispatch({ type: "UpdateLinkCell", value: e.target.value, link: id });
+      }}
       onBlur={finishEditing}
       onKeyDown={(e) => e.key === "Enter" && finishEditing()}
       autoFocus
-      className="w-full text-2xl font-bold border-b-2 border-gray-400 px-2 py-1"
+      className="w-full text-3xl font-semibold border-b-2 border-blue-400 focus:outline-none focus:border-blue-600 transition-colors px-2 py-1"
     />
   ) : (
+    // <h2
+    //   className="text-2xl font-bold cursor-pointer hover:underline"
+    //   onClick={() => setIsEditing(true)}
+    // >
+    //   {title}
+    // </h2>
     <h2
-      className="text-2xl font-bold cursor-pointer hover:underline"
-      onClick={() => setIsEditing(true)}
+      className="text-3xl font-semibold text-gray-800 cursor-pointer hover:underline hover:text-blue-600 transition-all"
+      onClick={startEditing}
     >
       {title}
     </h2>

@@ -1,21 +1,21 @@
 import { useWorkFlowDispatch, useWorkFlowState } from "./WorkFlowContext";
 import AutocompleteInput from "../util/AutoCompleteInput";
-import { PeopleList, type Table } from "../util/type";
+import { PeopleList, type Table, type Cell } from "../util/type";
+// import EditButton from "./EditButton";
 
 interface EditableCellProps {
-  value: string;
+  cell: Cell;
   type: string;
   row: number;
   col: number;
   colSpan: number;
   isEditing: boolean;
-  onStartEdit: (row: number, col: number) => void;
-  onFinishEdit: (row: number, col: number, key: string | null) => void;
+  onStartEdit: () => void;
+  onFinishEdit: (key: string | null) => void;
 }
 
-
 function TableCell({
-  value,
+  cell,
   type,
   row,
   col,
@@ -28,7 +28,6 @@ function TableCell({
   const state = useWorkFlowState();
   const decoration = colSpan === 1 ? "border border-gray-400" : "border border-gray-400 text-center";
 
-  const type_ = colSpan > 1 ? "link" : type;
   let autocompleteOptions_: string[] | undefined;
 
   function findAllTable(node: Table): string[] {
@@ -42,7 +41,7 @@ function TableCell({
     return titles;
   }
 
-  switch(type_) {
+  switch(type) {
     case "name":
       autocompleteOptions_ = PeopleList.map(p => p.name);
       break;
@@ -57,34 +56,62 @@ function TableCell({
   }
 
   return (
+    // <td
+    //   className={decoration}
+    //   colSpan={colSpan}
+    // >
     <td
-      className={decoration}
+      className={`px-3 py-2 border border-gray-300 ${type !== "link" ? "" : "text-center"} hover:bg-gray-100 transition-colors`}
       colSpan={colSpan}
-      onClick={(e) => {
-        e.stopPropagation();
-        onStartEdit(row, col);
-      }}
     >
-      {isEditing ? (
-        <AutocompleteInput
-          type={type_}
-          value={value}
-          row={row}
-          col={col}
-          autocompleteOptions={autocompleteOptions_}
-          onChange={(val) =>
-            dispatch({
-              type: "UpdateCell",
-              row,
-              col,
-              value: val,
-              pressedKey: null,
-            })
-          }
-          onFinishEdit={(key) => onFinishEdit(row, col, key)}
-        />
-      ) : (
-        <span>{colSpan > 1 ? "點我進入流程: " : ""}{value}</span>
+      {!isEditing ? type === "link" && 'link' in cell ? (
+        <div className="flex justify-center">
+          {/* <span
+            className="hovering: cursor-pointer hover:underline"
+            onClick={() => {
+              console.log(cell.link);
+              dispatch({
+                type: "SetCurrentTable",
+                tableId: cell.link, // ✅ 現在 TypeScript 知道這是 LinkCell),
+              });
+            }}
+          > */}
+          <span
+            className="text-blue-600 hover:underline cursor-pointer"
+            onClick={() => {
+              dispatch({
+                type: "SetCurrentTable",
+                tableId: cell.link, // ✅ 現在 TypeScript 知道這是 LinkCell),
+              });
+            }}
+          >
+            🔗點我進入流程: {cell.name}
+          </span>
+        </div>
+          ) : (
+            // <span onClick={onStartEdit}>{cell.name}</span>
+            <span
+              onClick={onStartEdit}
+              className="inline-block min-w-[1rem] min-h-[1.5rem] cursor-pointer"
+            >
+              {cell.name || <span className="text-white hover:text-gray-300">（點擊編輯）</span>}
+            </span>
+          ) : (
+          <AutocompleteInput
+            type={type}
+            value={cell.name}
+            autocompleteOptions={autocompleteOptions_}
+            onChange={(val) =>
+              dispatch({
+                type: "UpdateCell",
+                row,
+                col,
+                value: val,
+                pressedKey: null,
+              })
+            }
+            onFinishEdit={(key) => onFinishEdit(key)}
+          />
       )}
     </td>
   );
