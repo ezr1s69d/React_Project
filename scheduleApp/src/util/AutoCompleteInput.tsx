@@ -18,6 +18,7 @@ function AutocompleteInput({
   const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [highlightIndex, setHighlightIndex] = useState<number>(0);
 
   const listId = `autocomplete-${Date.now().toString()}`;
 
@@ -56,6 +57,25 @@ function AutocompleteInput({
     inputRef.current?.focus();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showDropdown || filteredOptions.length === 0) return;
+    console.log(highlightIndex)
+    if (e.key === "ArrowDown") {
+      const newHighlightIndex = highlightIndex < filteredOptions.length - 1 ? highlightIndex + 1 : highlightIndex;
+      setHighlightIndex(newHighlightIndex);
+    }
+    else if (e.key === "ArrowUp") {
+      const newHighlightIndex = highlightIndex > 0 ? highlightIndex - 1 : highlightIndex;
+      setHighlightIndex(newHighlightIndex);      
+    }
+    else if (e.key === "Enter") {
+      if (highlightIndex >= 0 && highlightIndex < filteredOptions.length) {
+        handleSelect(filteredOptions[highlightIndex]);
+        onFinishEdit(e.key);
+      }
+    }
+  }
+
   return (
     <div className="relative w-full">
       <input
@@ -66,19 +86,29 @@ function AutocompleteInput({
         autoFocus
         list={listId}
         onChange={(e) => onChange(e.target.value)}
-        onBlur={() => {onFinishEdit(null); setShowDropdown(false)}}
+        onBlur={() => {
+          if (filteredOptions.length > 0 && highlightIndex >= 0 && highlightIndex < filteredOptions.length) {
+            handleSelect(filteredOptions[highlightIndex]);
+          }
+          onFinishEdit(null);
+          setShowDropdown(false);
+          setHighlightIndex(0);;
+        }}
         onFocus={() => {
           if (filteredOptions.length > 0) setShowDropdown(true);
         }}
-        onKeyDown={(e) => e.key === "Enter" && onFinishEdit(e.key)}
+        onKeyDown={handleKeyDown}
       />
       {showDropdown && filteredOptions.length > 0 && (
         <ul className="absolute z-10 bg-white border border-gray-300 w-full max-h-48 overflow-y-auto shadow-lg rounded mt-1">
           {filteredOptions.map((option, idx) => (
             <li
               key={idx}
+              onMouseEnter={() => setHighlightIndex(idx)}
               onMouseDown={() => handleSelect(option)}
-              className="px-4 py-2 cursor-pointer hover:bg-blue-100"
+              className={`px-4 py-2 cursor-pointer hover:bg-blue-100 ${
+                highlightIndex === idx ? "bg-blue-300" : ""
+              }`}
             >
               {option}
             </li>

@@ -10,6 +10,10 @@ function TableHead({ field }:{ field: Fields[] | undefined; }) {
   const dispatch = useWorkFlowDispatch();
   const state = useWorkFlowState();
 
+  const autocompleteOptions_ = FieldsList
+    .map(f => f.name)
+    .filter(name => !field?.some(f => f.name === name));
+
   const startEditing = (index: number) => {
     if (!field) return;
     setEditingIndex(index);
@@ -42,7 +46,7 @@ function TableHead({ field }:{ field: Fields[] | undefined; }) {
               <AutocompleteInput
                 type="text"
                 value={value.name}
-                autocompleteOptions={FieldsList.map(f => f.name)}
+                autocompleteOptions={autocompleteOptions_}
                 onChange={(e) => dispatch({ type: "UpdateField", col: index, value: { name: e, type: field[index].type } })}
                 onFinishEdit={() => finishEditing(index)}
               />
