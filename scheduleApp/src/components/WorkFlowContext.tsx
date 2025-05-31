@@ -190,6 +190,32 @@ function reducer(state: State, action: Action): State {
       };
     }
 
+    case "ReorderColumns":
+      return {
+        ...state,
+        Tables: updateTableById(state.Tables, state.currentTableId, (table) => {
+          // Reorder fields
+          const fields = [...table.fields];
+          const [movedField] = fields.splice(action.sourceIndex, 1);
+          fields.splice(action.targetIndex, 0, movedField);
+
+          // Reorder data in each row
+          const tableData = table.tableData.map(row => {
+            if (row.length === 1) return row; // Skip link rows
+            const newRow = [...row];
+            const [movedCell] = newRow.splice(action.sourceIndex, 1);
+            newRow.splice(action.targetIndex, 0, movedCell);
+            return newRow;
+          });
+
+          return {
+            ...table,
+            fields,
+            tableData
+          };
+        })
+      };
+
     default:
       return state;
   }

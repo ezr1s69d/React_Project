@@ -15,13 +15,12 @@ function AutocompleteInput({
   onChange,
   onFinishEdit,
 }: AutocompleteInputProps) {
-  const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [highlightIndex, setHighlightIndex] = useState<number>(0);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
   const listId = `autocomplete-${Date.now().toString()}`;
-
 
   if (type === "name" || type === "group" || type === "link") {
       const parts = value.split(",");
@@ -35,85 +34,92 @@ function AutocompleteInput({
   }
 
   useEffect(() => {
-    const lastInput = value.split(",").pop()?.trim().toLowerCase() || "";
-    if (lastInput) {
-      const filtered = autocompleteOptions.filter(opt =>
-        opt.toLowerCase().includes(lastInput)
-      );
-      setFilteredOptions(filtered);
-      setShowDropdown(true);
-    } else {
-      setFilteredOptions([]);
-      setShowDropdown(false);
-    }
-  }, [value, autocompleteOptions]);
-
-  const handleSelect = (name: string) => {
-    const parts = value.split(",");
-    parts[parts.length - 1] = ` ${name}`; // 保留前段
-    const newValue = parts.join(",").trimStart();
-    onChange(newValue);
-    setShowDropdown(false);
     inputRef.current?.focus();
-  };
+  }, []);
+
+  const filteredSuggestions = autocompleteOptions?.filter((option) =>
+    option.toLowerCase().includes(value.toLowerCase())
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showDropdown || filteredOptions.length === 0) return;
-    console.log(highlightIndex)
-    if (e.key === "ArrowDown") {
-      const newHighlightIndex = highlightIndex < filteredOptions.length - 1 ? highlightIndex + 1 : highlightIndex;
-      setHighlightIndex(newHighlightIndex);
-    }
-    else if (e.key === "ArrowUp") {
-      const newHighlightIndex = highlightIndex > 0 ? highlightIndex - 1 : highlightIndex;
-      setHighlightIndex(newHighlightIndex);      
-    }
-    else if (e.key === "Enter") {
-      if (highlightIndex >= 0 && highlightIndex < filteredOptions.length) {
-        handleSelect(filteredOptions[highlightIndex]);
-        onFinishEdit(e.key);
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (highlightedIndex !== -1 && filteredSuggestions) {
+        onChange(filteredSuggestions[highlightedIndex]);
       }
+      onFinishEdit("Enter");
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+      onFinishEdit(null);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev < (filteredSuggestions?.length ?? 0) - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : prev));
     }
-  }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node) &&
+        !inputRef.current?.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+        onFinishEdit(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onFinishEdit]);
 
   return (
     <div className="relative w-full">
       <input
-        className="w-full box-content"
         ref={inputRef}
-        type={type === "select" ? "text" : type}
+        type={type === "time" ? "time" : "text"}
         value={value}
-        autoFocus
-        list={listId}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={() => {
-          if (filteredOptions.length > 0 && highlightIndex >= 0 && highlightIndex < filteredOptions.length) {
-            handleSelect(filteredOptions[highlightIndex]);
-          }
-          onFinishEdit(null);
-          setShowDropdown(false);
-          setHighlightIndex(0);;
-        }}
-        onFocus={() => {
-          if (filteredOptions.length > 0) setShowDropdown(true);
+        onChange={(e) => {
+          onChange(e.target.value);
+          setShowSuggestions(true);
+          setHighlightedIndex(-1);
         }}
         onKeyDown={handleKeyDown}
+        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg 
+                  text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 
+                  focus:border-transparent transition-all duration-200"
       />
-      {showDropdown && filteredOptions.length > 0 && (
-        <ul className="absolute z-10 bg-white border border-gray-300 w-full max-h-48 overflow-y-auto shadow-lg rounded mt-1">
-          {filteredOptions.map((option, idx) => (
-            <li
-              key={idx}
-              onMouseEnter={() => setHighlightIndex(idx)}
-              onMouseDown={() => handleSelect(option)}
-              className={`px-4 py-2 cursor-pointer hover:bg-blue-100 ${
-                highlightIndex === idx ? "bg-blue-300" : ""
-              }`}
+      {showSuggestions && filteredSuggestions && filteredSuggestions.length > 0 && (
+        <div
+          ref={suggestionsRef}
+          className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 
+                     rounded-lg shadow-lg overflow-hidden"
+        >
+          {filteredSuggestions.map((suggestion, index) => (
+            <div
+              key={suggestion}
+              className={`px-4 py-2 cursor-pointer transition-colors
+                         ${
+                           index === highlightedIndex
+                             ? "bg-teal-600 text-white"
+                             : "text-gray-300 hover:bg-gray-700"
+                         }`}
+              onClick={() => {
+                onChange(suggestion);
+                setShowSuggestions(false);
+                onFinishEdit(null);
+              }}
+              onMouseEnter={() => setHighlightedIndex(index)}
             >
-              {option}
-            </li>
+              {suggestion}
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

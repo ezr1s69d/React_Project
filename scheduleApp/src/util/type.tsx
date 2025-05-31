@@ -54,7 +54,8 @@ export type Action =
   | { type: "UpdateTitle"; value: string }
   | { type: "SetCurrentTable", tableId: string }
   | { type: "AddWorkFlowTable", parentId: string, newTable: Table }
-  | { type: "DeleteWorkFlowTable", tableId: string };
+  | { type: "DeleteWorkFlowTable", tableId: string }
+  | { type: "ReorderColumns", sourceIndex: number, targetIndex: number };
 
 export const PeopleList: Person[] = [
     { id: "1", name: "AA" },

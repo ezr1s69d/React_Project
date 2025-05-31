@@ -34,7 +34,7 @@ function TableTitle({ id, title }:{ id: string | undefined, title: string | unde
     />
   ) : (
     <h2
-      className="text-3xl font-semibold text-gray-800 cursor-pointer"
+      className="text-3xl font-semibold text-white-800 cursor-pointer"
       onClick={startEditing}
     >
       {title}

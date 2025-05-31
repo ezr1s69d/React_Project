@@ -48,7 +48,7 @@ function TableBody({ table }: { table: Table | undefined }) {
   };
 
   return (
-    <tbody>
+    <tbody className="divide-y divide-gray-700">
       {tableData.map((row, rowIndex) => (
         <tr
           key={rowIndex}
@@ -60,14 +60,16 @@ function TableBody({ table }: { table: Table | undefined }) {
             e.stopPropagation();
             setClickedColumn(null);
           }}
+          className={`group hover:bg-gray-750 transition-colors duration-150
+                     ${rowIndex % 2 === 0 ? 'bg-gray-800' : 'bg-gray-850'}`}
         >
-          <td className="w-2 px-2 font-bold">{rowIndex}</td>
+          <td className="w-12 px-4 py-4 font-medium text-gray-400">{rowIndex + 1}</td>
 
           {row.map((cell: Cell, colIndex) => (
             <TableCell
               key={colIndex}
               type={cell.type}
-              cell={cell} // ⬅ 傳入 Cell.name
+              cell={cell}
               row={rowIndex}
               col={colIndex}
               colSpan={cell.type === "link" ? totalCols : 1}
@@ -77,8 +79,8 @@ function TableBody({ table }: { table: Table | undefined }) {
             />
           ))}
 
-          <td className="w-20">
-            <div className="flex items-left justify-left h-full">
+          <td className="w-20 px-4 py-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="flex items-center gap-2">
               {clickedColumn === rowIndex && <RowButton rowIndex={rowIndex} />}
             </div>
           </td>
