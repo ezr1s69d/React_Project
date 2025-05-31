@@ -59,6 +59,7 @@ function AutocompleteInput({
   return (
     <div className="relative w-full">
       <input
+        className="w-full box-content"
         ref={inputRef}
         type={type === "select" ? "text" : type}
         value={value}

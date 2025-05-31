@@ -56,26 +56,12 @@ function TableCell({
   }
 
   return (
-    // <td
-    //   className={decoration}
-    //   colSpan={colSpan}
-    // >
     <td
-      className={`px-3 py-2 border border-gray-300 ${type !== "link" ? "" : "text-center"} hover:bg-gray-100 transition-colors`}
+      className={`w-32 px-3 py-2 border border-gray-300 ${type !== "link" ? "" : "text-center"} hover:bg-gray-100 transition-colors`}
       colSpan={colSpan}
     >
       {!isEditing ? type === "link" && 'link' in cell ? (
         <div className="flex justify-center">
-          {/* <span
-            className="hovering: cursor-pointer hover:underline"
-            onClick={() => {
-              console.log(cell.link);
-              dispatch({
-                type: "SetCurrentTable",
-                tableId: cell.link, // ✅ 現在 TypeScript 知道這是 LinkCell),
-              });
-            }}
-          > */}
           <span
             className="text-blue-600 hover:underline cursor-pointer"
             onClick={() => {
@@ -89,7 +75,6 @@ function TableCell({
           </span>
         </div>
           ) : (
-            // <span onClick={onStartEdit}>{cell.name}</span>
             <span
               onClick={onStartEdit}
               className="inline-block min-w-[1rem] min-h-[1.5rem] cursor-pointer"

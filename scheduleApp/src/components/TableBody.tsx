@@ -61,7 +61,7 @@ function TableBody({ table }: { table: Table | undefined }) {
             setClickedColumn(null);
           }}
         >
-          <td className="px-2 font-bold">{rowIndex}</td>
+          <td className="w-2 px-2 font-bold">{rowIndex}</td>
 
           {row.map((cell: Cell, colIndex) => (
             <TableCell
@@ -77,7 +77,11 @@ function TableBody({ table }: { table: Table | undefined }) {
             />
           ))}
 
-          <td>{clickedColumn === rowIndex && <RowButton rowIndex={rowIndex} />}</td>
+          <td className="w-20">
+            <div className="flex items-left justify-left h-full">
+              {clickedColumn === rowIndex && <RowButton rowIndex={rowIndex} />}
+            </div>
+          </td>
         </tr>
       ))}
     </tbody>

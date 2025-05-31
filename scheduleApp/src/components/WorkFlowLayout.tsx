@@ -10,36 +10,19 @@ function WorkFlowLayout() {
   const table = findTableById(state.Tables, state.currentTableId)
 
   return (
-    // <div className="p-1 h-screen">
-    //   <div className="mb-4 flex justify-center gap-4">
-    //     <TableTitle id={table?.id} title={table?.title} />
-    //   </div>
-    //   <div className="flex items-start h-[calc(100vh-100px)]">
-    //     <div className="w-[300px] p-4 overflow-auto border-r h-full">
-    //       <WorkFlowTree />
-    //     </div>
-    //     <div className="flex-1 p-4 overflow-auto h-full">
-    //       <div className="h-full overflow-auto border rounded">
-    //         <table className="border-collapse w-100">
-    //           <TableHead field={table?.fields} />
-    //           <TableBody table={table} />
-    //         </table>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </div>
-    
     <div className="p-4 bg-gray-100 h-screen">
-      <div className="mb-4 flex justify-center">
-        <TableTitle id={table?.id} title={table?.title} />
+      <div className="mb-4">
+        <div className="w-fit max-w-md mx-auto">
+          <TableTitle id={table?.id} title={table?.title} />
+        </div>
       </div>
       <div className="flex h-[calc(100vh-120px)] rounded-lg overflow-hidden shadow-lg">
-        <div className="w-[280px] p-4 bg-white border-r overflow-auto">
+        <div className="w-[250px] p-4 bg-white border-r">
           <WorkFlowTree />
         </div>
         <div className="flex-1 p-4 bg-white overflow-auto">
           <div className="h-full border rounded-xl shadow-sm bg-white overflow-auto">
-            <table className="table-auto w-full text-left border-collapse">
+            <table className="table-fixed w-full text-left border-collapse">
               <TableHead field={table?.fields} />
               <TableBody table={table} />
             </table>

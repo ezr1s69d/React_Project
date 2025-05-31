@@ -2,21 +2,19 @@ import { useWorkFlowDispatch } from "./WorkFlowContext";
 
 function ColumnButton() {
   const dispatch = useWorkFlowDispatch();
-  const decoration_left = "w-10 h-5 ml-2 transition duration-150 flex items-center justify-center text-sm"
-  const decoration_right = "w-10 h-5 transition duration-150 flex items-center justify-center text-sm"
-
+  const decoration = "flex-shrink-0 flex items-center justify-center text-sm transition duration-150"
   return (
     <div className="flex gap-2">
       <button
         onClick={() => dispatch({ type: "AddColumn" })}
-        className={decoration_left}
+        className={decoration + "w-10 h-5 ml-2"}
         title="Add Column"
       >
         📊➕
       </button>
       <button
         onClick={() => dispatch({ type: "DeleteColumn" })}
-        className={decoration_right}
+        className={decoration + "w-12 h-5 pr-2"}
         title="Delete Column"
       >
         📊❌

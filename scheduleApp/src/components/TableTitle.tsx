@@ -20,18 +20,6 @@ function TableTitle({ id, title }:{ id: string | undefined, title: string | unde
   };
 
   return isEditing ? (
-    // <input
-    //   type="text"
-    //   value={tempValue}
-    //   onChange={(e) => {
-    //     dispatch({ type: "UpdateTitle", value: e.target.value });
-    //     if(id) dispatch({ type: "UpdateLinkCell", value: e.target.value, link: id });
-    //   }}
-    //   onBlur={finishEditing}
-    //   onKeyDown={(e) => e.key === "Enter" && finishEditing()}
-    //   autoFocus
-    //   className="w-full text-2xl font-bold border-b-2 border-gray-400 px-2 py-1"
-    // />
     <input
       type="text"
       value={title}
@@ -45,14 +33,8 @@ function TableTitle({ id, title }:{ id: string | undefined, title: string | unde
       className="w-full text-3xl font-semibold border-b-2 border-blue-400 focus:outline-none focus:border-blue-600 transition-colors px-2 py-1"
     />
   ) : (
-    // <h2
-    //   className="text-2xl font-bold cursor-pointer hover:underline"
-    //   onClick={() => setIsEditing(true)}
-    // >
-    //   {title}
-    // </h2>
     <h2
-      className="text-3xl font-semibold text-gray-800 cursor-pointer hover:underline hover:text-blue-600 transition-all"
+      className="text-3xl font-semibold text-gray-800 cursor-pointer"
       onClick={startEditing}
     >
       {title}

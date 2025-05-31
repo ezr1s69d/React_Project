@@ -25,23 +25,10 @@ function TableHead({ field }:{ field: Fields[] | undefined; }) {
   };
 
   return (
-    // <thead>
-    //   <tr>
-    //     <th
-    //       className="hovering: cursor-pointer"
-    //       onClick={() => {
-    //         const table = findParentTableById(state.Tables, state.currentTableId);
-    //         if(table) dispatch({ type: "SetCurrentTable", tableId: table?.id})
-    //       }}
-    //     >
-    //       ↺
-    //     </th>
-    //       {field?.map((value, index) => (
-    //         <th key={index} scope="col" className="">
     <thead className="bg-gray-50 text-gray-700 uppercase text-sm">
       <tr>
         <th 
-          className="px-4 py-2 cursor-pointer hover:text-blue-600 transition-colors"
+          className="w-8 px-4 py-2 cursor-pointer hover:text-blue-600 transition-colors"
           onClick={() => {
             const table = findParentTableById(state.Tables, state.currentTableId);
             if(table) dispatch({ type: "SetCurrentTable", tableId: table?.id})
@@ -50,7 +37,7 @@ function TableHead({ field }:{ field: Fields[] | undefined; }) {
           ↺
         </th>
           {field?.map((value, index) => (
-            <th key={index} className="px-4 py-2">
+            <th key={index} className="w-32 px-4 py-2">
             {editingIndex === index ? (
               <AutocompleteInput
                 type="text"
@@ -60,15 +47,15 @@ function TableHead({ field }:{ field: Fields[] | undefined; }) {
                 onFinishEdit={() => finishEditing(index)}
               />
             ) : (
-              <span onClick={() => startEditing(index)} className="cursor-pointer">
+              <span onClick={() => startEditing(index)} className="w-32 cursor-pointer">
                 {value.name}
               </span>
             )}
           </th>
         ))}
-      <td className="">
-        <ColumnButton />
-      </td>
+        <td className="">
+          <ColumnButton />
+        </td>
       </tr>
     </thead>
   );
