@@ -89,10 +89,10 @@ function AutocompleteInput({
         onBlur={() => {
           if (filteredOptions.length > 0 && highlightIndex >= 0 && highlightIndex < filteredOptions.length) {
             handleSelect(filteredOptions[highlightIndex]);
+            onFinishEdit(null);
+            setShowDropdown(false);
+            setHighlightIndex(0);
           }
-          onFinishEdit(null);
-          setShowDropdown(false);
-          setHighlightIndex(0);;
         }}
         onFocus={() => {
           if (filteredOptions.length > 0) setShowDropdown(true);
